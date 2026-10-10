@@ -1,0 +1,16 @@
+model Module {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  isCore      Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenantModules TenantModule[]
+
+  @@index([code])
+  @@map("modules")
+}

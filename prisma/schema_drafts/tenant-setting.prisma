@@ -1,0 +1,16 @@
+model TenantSetting {
+  id        String   @id @default(uuid())
+  tenantId  String
+  key       String
+  value     Json
+  isActive  Boolean  @default(true)
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@map("tenant_settings")
+}

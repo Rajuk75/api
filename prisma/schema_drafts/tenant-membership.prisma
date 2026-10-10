@@ -1,0 +1,30 @@
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  REVOKED
+}
+
+model TenantMembership {
+  id        String           @id @default(uuid())
+  tenantId  String
+  userId    String
+  roleId    String
+  status    MembershipStatus @default(ACTIVE)
+  joinedAt  DateTime?
+  isActive  Boolean          @default(true)
+  isDeleted Boolean          @default(false)
+  deletedAt DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId, status])
+  @@index([userId])
+  @@index([roleId])
+  @@map("tenant_memberships")
+}

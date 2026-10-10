@@ -1,0 +1,17 @@
+model PlatformRoleAssignment {
+  id               String    @id @default(uuid())
+  userId           String
+  roleId           String
+  assignedByUserId String?
+  isActive         Boolean   @default(true)
+  isDeleted        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  revokedAt        DateTime?
+
+  user       User  @relation("UserPlatformRoles", fields: [userId], references: [id], onDelete: Restrict)
+  role       Role  @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  assignedBy User? @relation("PlatformRolesAssignedBy", fields: [assignedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([userId, roleId])
+  @@map("platform_role_assignments")
+}

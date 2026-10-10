@@ -1,0 +1,22 @@
+model AuthSession {
+  id               String    @id @default(uuid())
+  userId           String
+  refreshTokenHash String    @unique
+  familyId         String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime?
+  ipAddress        String?
+  userAgent        String?
+  isActive         Boolean   @default(true)
+  isDeleted        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([refreshTokenHash])
+  @@map("auth_sessions")
+}

@@ -1,0 +1,20 @@
+model TenantModule {
+  id         String    @id @default(uuid())
+  tenantId   String
+  moduleId   String
+  isEnabled  Boolean   @default(true)
+  enabledAt  DateTime?
+  disabledAt DateTime?
+  isActive   Boolean   @default(true)
+  isDeleted  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, moduleId])
+  @@index([tenantId])
+  @@index([moduleId])
+  @@map("tenant_modules")
+}

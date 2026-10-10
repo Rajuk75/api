@@ -1,0 +1,27 @@
+enum SecurityEventSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model SecurityEvent {
+  id        String                @id @default(uuid())
+  tenantId  String?
+  userId    String?
+  eventType String
+  severity  SecurityEventSeverity @default(MEDIUM)
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime              @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  user   User?   @relation("UserSecurityEvents", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, createdAt])
+  @@index([userId, createdAt])
+  @@index([tenantId, createdAt])
+  @@index([severity, createdAt])
+  @@map("security_events")
+}

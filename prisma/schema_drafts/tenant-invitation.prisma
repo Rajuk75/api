@@ -1,0 +1,24 @@
+model TenantInvitation {
+  id              String    @id @default(uuid())
+  tenantId        String
+  email           String
+  roleId          String
+  tokenHash       String    @unique
+  invitedByUserId String
+  expiresAt       DateTime
+  acceptedAt      DateTime?
+  revokedAt       DateTime?
+  isActive        Boolean   @default(true)
+  isDeleted       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  role      Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  invitedBy User   @relation("UserSentInvitations", fields: [invitedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, email])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("tenant_invitations")
+}
