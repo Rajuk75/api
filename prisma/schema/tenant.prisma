@@ -1,0 +1,33 @@
+enum TenantType {
+  SCHOOL
+  COACHING
+  COLLEGE
+  OTHER
+}
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model Tenant {
+  id            String       @id @default(uuid())
+  name          String
+  type          TenantType   @default(SCHOOL)
+  status        TenantStatus @default(ACTIVE)
+  timezone      String       @default("UTC")
+  defaultLocale String       @default("en")
+  isActive      Boolean      @default(true)
+  isDeleted     Boolean      @default(false)
+  deletedAt     DateTime?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  campuses Campus[]
+
+  @@index([status, isDeleted])
+  @@map("tenants")
+}

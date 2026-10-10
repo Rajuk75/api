@@ -30,6 +30,16 @@
       "key": "resetToken",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "tenantId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "campusId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -403,6 +413,366 @@
               "path": ["users", "{{userId}}", "delete-user"]
             },
             "description": "Soft deletes user (isDeleted: true, isActive: false, deletedAt timestamp)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tenants",
+      "item": [
+        {
+          "name": "1. Create Tenant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('tenantId', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Delhi Public School\",\n  \"type\": \"SCHOOL\",\n  \"timezone\": \"Asia/Kolkata\",\n  \"defaultLocale\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tenants/create-new-tenant",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "create-new-tenant"]
+            },
+            "description": "Creates a new School / Coaching organization (Tenant). Automatically saves tenantId."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get All Tenants",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/get-all-tenants?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "get-all-tenants"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "type", "value": "SCHOOL", "disabled": true },
+                { "key": "status", "value": "ACTIVE", "disabled": true }
+              ]
+            },
+            "description": "Lists all tenants with pagination and optional search filter."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Tenant By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{tenantId}}/get-tenant",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "{{tenantId}}", "get-tenant"]
+            },
+            "description": "Gets tenant details by UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Update Tenant",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Delhi Public School - Main Campus\",\n  \"timezone\": \"Asia/Kolkata\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{tenantId}}/update-tenant",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "{{tenantId}}", "update-tenant"]
+            },
+            "description": "Updates tenant name, timezone, etc."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Update Tenant Status",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{tenantId}}/update-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "{{tenantId}}", "update-status"]
+            },
+            "description": "Changes tenant status (ACTIVE, INACTIVE, SUSPENDED)."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Delete Tenant",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{tenantId}}/delete-tenant",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "{{tenantId}}", "delete-tenant"]
+            },
+            "description": "Soft deletes tenant."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Campuses",
+      "item": [
+        {
+          "name": "1. Create Campus",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('campusId', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenantId\": \"{{tenantId}}\",\n  \"name\": \"Noida Branch\",\n  \"code\": \"DPS-NOI\",\n  \"city\": \"Noida\",\n  \"state\": \"Uttar Pradesh\",\n  \"pincode\": \"201301\",\n  \"phoneNumber\": \"+919876543210\",\n  \"email\": \"noida@dps.com\",\n  \"isMainBranch\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campuses/create-new-campus",
+              "host": ["{{baseUrl}}"],
+              "path": ["campuses", "create-new-campus"]
+            },
+            "description": "Creates a new Campus / Branch linked to a tenant. Automatically saves campusId."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get All Campuses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campuses/get-all-campuses?tenantId={{tenantId}}&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["campuses", "get-all-campuses"],
+              "query": [
+                { "key": "tenantId", "value": "{{tenantId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            },
+            "description": "Lists all campuses for a tenant with pagination and search."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Campus By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campuses/{{campusId}}/get-campus",
+              "host": ["{{baseUrl}}"],
+              "path": ["campuses", "{{campusId}}", "get-campus"]
+            },
+            "description": "Gets campus details by UUID."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Update Campus",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Greater Noida Branch\",\n  \"phoneNumber\": \"+919876543211\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campuses/{{campusId}}/update-campus",
+              "host": ["{{baseUrl}}"],
+              "path": ["campuses", "{{campusId}}", "update-campus"]
+            },
+            "description": "Updates campus information."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Delete Campus",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campuses/{{campusId}}/delete-campus",
+              "host": ["{{baseUrl}}"],
+              "path": ["campuses", "{{campusId}}", "delete-campus"]
+            },
+            "description": "Soft deletes campus."
           },
           "response": []
         }

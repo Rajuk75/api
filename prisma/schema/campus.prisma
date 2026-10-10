@@ -1,0 +1,26 @@
+model Campus {
+  id           String    @id @default(uuid())
+  tenantId     String
+  name         String
+  code         String?
+  address      String?
+  city         String?
+  state        String?
+  pincode      String?
+  phoneNumber  String?
+  email        String?
+  isMainBranch Boolean   @default(false)
+  isActive     Boolean   @default(true)
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, isDeleted])
+  @@map("campuses")
+}

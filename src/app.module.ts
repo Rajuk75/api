@@ -5,6 +5,8 @@ import { HealthModule } from './health/health.module';
 import { PrismaModule } from './infrastructure/database/prisma.module';
 import { UsersModule } from './core/users/users.module';
 import { AuthModule } from './core/auth/auth.module';
+import { TenantsModule } from './core/tenants/tenants.module';
+import { CampusesModule } from './core/campuses/campuses.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { AuthModule } from './core/auth/auth.module';
     PrismaModule,
     UsersModule,
     AuthModule,
+    TenantsModule,
+    CampusesModule,
     HealthModule,
   ],
   controllers: [],
