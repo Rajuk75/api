@@ -1,10 +1,12 @@
-import { Controller, Post, Body, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SwitchContextDto } from './dto/switch-context.dto';
+import { AuthGuard } from '../../common/guards/auth.guard';
 import {
   setSuccess,
   setServerError,
@@ -107,6 +109,33 @@ export class AuthController {
       logger.error(`auth.controller.ts >>>> resetPassword() >>>> Error: ${error}`);
       if (error?.status === 400 || error?.message?.includes('expired') || error?.message?.includes('Invalid')) {
         return setBadRequest(res, error.message);
+      }
+      return setServerError(res, error);
+    }
+  }
+
+  // ========================================== SWITCH CONTEXT ==========================================
+  @Post('switch-context')
+  @UseGuards(AuthGuard)
+  async switchContext(
+    @Req() req: Request,
+    @Body() payload: SwitchContextDto,
+    @Res() res: Response,
+  ) {
+    const userId = req.user?.id;
+    logger.debug(
+      `auth.controller.ts >>>> switchContext() >>>> User: ${userId}, Tenant: ${payload.tenantId}, Campus: ${payload.campusId}`,
+    );
+    try {
+      const result = await this.authService.switchContext(userId!, payload);
+      return setSuccess(res, {
+        message: 'Active context switched successfully',
+        data: result,
+      });
+    } catch (error: any) {
+      logger.error(`auth.controller.ts >>>> switchContext() >>>> Error: ${error}`);
+      if (error?.status === 401 || error?.message?.includes('access')) {
+        return setNotAuthorized(res, { message: error.message });
       }
       return setServerError(res, error);
     }

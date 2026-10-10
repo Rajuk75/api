@@ -40,6 +40,21 @@
       "key": "campusId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "roleId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "permissionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "membershipId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -204,6 +219,53 @@
               "path": ["auth", "reset-password"]
             },
             "description": "Resets user password using reset token and revokes all active sessions."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Switch Context (Active School/Campus)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "    pm.collectionVariables.set('token', res.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenantId\": \"{{tenantId}}\",\n  \"campusId\": \"{{campusId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/switch-context",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "switch-context"]
+            },
+            "description": "Switches the user's active tenant/campus context and returns a fresh signed token with tenantId and campusId embedded."
           },
           "response": []
         }
@@ -773,6 +835,436 @@
               "path": ["campuses", "{{campusId}}", "delete-campus"]
             },
             "description": "Soft deletes campus."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Permissions",
+      "item": [
+        {
+          "name": "1. Seed Default Permissions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/permissions/seed-default-permissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions", "seed-default-permissions"]
+            },
+            "description": "Seeds default system permissions (user, tenant, campus, role, membership)."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get All Permissions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/permissions/get-all-permissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions", "get-all-permissions"]
+            },
+            "description": "Lists all atomic system permissions."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Create Permission",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"student:create\",\n  \"name\": \"Create Student\",\n  \"resource\": \"student\",\n  \"action\": \"create\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/permissions/create-new-permission",
+              "host": ["{{baseUrl}}"],
+              "path": ["permissions", "create-new-permission"]
+            },
+            "description": "Creates a custom permission."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "1. Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('roleId', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"School Teacher\",\n  \"code\": \"TEACHER\",\n  \"description\": \"Standard teaching staff\",\n  \"tenantId\": \"{{tenantId}}\",\n  \"scope\": \"TENANT\",\n  \"permissionIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/create-new-role",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "create-new-role"]
+            },
+            "description": "Creates a role with optional assigned permissions. Automatically saves roleId."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get All Roles",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/get-all-roles?tenantId={{tenantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "get-all-roles"],
+              "query": [
+                { "key": "tenantId", "value": "{{tenantId}}" }
+              ]
+            },
+            "description": "Lists roles for a tenant including system roles."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Role By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}/get-role",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}", "get-role"]
+            },
+            "description": "Gets role details with its permissions."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Update Role",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Senior Teacher\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}/update-role",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}", "update-role"]
+            },
+            "description": "Updates role name, description, or assigned permissions."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Delete Role",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}/delete-role",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}", "delete-role"]
+            },
+            "description": "Soft deletes custom role (System roles cannot be deleted)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Memberships",
+      "item": [
+        {
+          "name": "1. Create Membership (Assign User to School/Campus)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "    pm.collectionVariables.set('membershipId', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"tenantId\": \"{{tenantId}}\",\n  \"campusId\": \"{{campusId}}\",\n  \"roleId\": \"{{roleId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/memberships/create-new-membership",
+              "host": ["{{baseUrl}}"],
+              "path": ["memberships", "create-new-membership"]
+            },
+            "description": "Assigns a user to a school/tenant and optionally to a specific campus with a role."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get My Memberships",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/memberships/my-memberships",
+              "host": ["{{baseUrl}}"],
+              "path": ["memberships", "my-memberships"]
+            },
+            "description": "Retrieves all schools and campuses where the logged-in user has access."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get All Memberships",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/memberships/get-all-memberships?tenantId={{tenantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["memberships", "get-all-memberships"],
+              "query": [
+                { "key": "tenantId", "value": "{{tenantId}}" }
+              ]
+            },
+            "description": "Lists all memberships for a school."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get Membership By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/memberships/{{membershipId}}/get-membership",
+              "host": ["{{baseUrl}}"],
+              "path": ["memberships", "{{membershipId}}", "get-membership"]
+            },
+            "description": "Gets membership record by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Update Membership",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/memberships/{{membershipId}}/update-membership",
+              "host": ["{{baseUrl}}"],
+              "path": ["memberships", "{{membershipId}}", "update-membership"]
+            },
+            "description": "Updates member role or status (ACTIVE, SUSPENDED, REVOKED)."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Revoke Membership",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/memberships/{{membershipId}}/delete-membership",
+              "host": ["{{baseUrl}}"],
+              "path": ["memberships", "{{membershipId}}", "delete-membership"]
+            },
+            "description": "Revokes and soft deletes membership."
           },
           "response": []
         }

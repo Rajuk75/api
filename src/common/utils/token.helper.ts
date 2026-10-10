@@ -9,12 +9,15 @@ export const DEFAULT_RESET_TOKEN_HOURS = 1;
 export interface TokenUserPayload {
   userId: string;
   email: string;
+  tenantId?: string | null;
+  campusId?: string | null;
+  roleId?: string | null;
   [key: string]: any;
 }
 
 export class TokenHelper {
   /**
-   * Generates a signed JWT Access Token with userId & email embedded in payload
+   * Generates a signed JWT Access Token with userId, email, and active tenant/campus context
    */
   static generateAccessToken(
     payload: TokenUserPayload,
@@ -24,6 +27,9 @@ export class TokenHelper {
       userId: payload.userId,
       email: payload.email,
       sub: payload.userId,
+      ...(payload.tenantId ? { tenantId: payload.tenantId } : {}),
+      ...(payload.campusId ? { campusId: payload.campusId } : {}),
+      ...(payload.roleId ? { roleId: payload.roleId } : {}),
     };
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, {

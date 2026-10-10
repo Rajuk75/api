@@ -4,6 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
 import { UsersRepository } from '../users/users.repository';
+import { MembershipsRepository } from '../memberships/memberships.repository';
 
 const mockUser = {
   id: 'uuid-1234',
@@ -21,6 +22,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let authRepository: AuthRepository;
   let usersRepository: UsersRepository;
+  let membershipsRepository: MembershipsRepository;
 
   const mockAuthRepository = {
     createSession: jest.fn(),
@@ -34,9 +36,15 @@ describe('AuthService', () => {
 
   const mockUsersRepository = {
     create: jest.fn(),
+    findById: jest.fn(),
     findByEmail: jest.fn(),
     findByEmailWithPassword: jest.fn(),
     updatePassword: jest.fn(),
+  };
+
+  const mockMembershipsRepository = {
+    findExisting: jest.fn(),
+    findUserActiveMemberships: jest.fn().mockResolvedValue([]),
   };
 
   beforeEach(async () => {
@@ -45,12 +53,14 @@ describe('AuthService', () => {
         AuthService,
         { provide: AuthRepository, useValue: mockAuthRepository },
         { provide: UsersRepository, useValue: mockUsersRepository },
+        { provide: MembershipsRepository, useValue: mockMembershipsRepository },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     authRepository = module.get<AuthRepository>(AuthRepository);
     usersRepository = module.get<UsersRepository>(UsersRepository);
+    membershipsRepository = module.get<MembershipsRepository>(MembershipsRepository);
     jest.clearAllMocks();
   });
 

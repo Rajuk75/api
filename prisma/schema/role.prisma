@@ -1,0 +1,26 @@
+enum RoleScope {
+  PLATFORM
+  TENANT
+}
+
+model Role {
+  id          String    @id @default(uuid())
+  tenantId    String?
+  name        String
+  description String?
+  scope       RoleScope @default(TENANT)
+  isSystem    Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant          Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rolePermissions RolePermission[]
+  memberships     TenantMembership[]
+
+  @@index([tenantId, name])
+  @@index([scope, isDeleted])
+  @@map("roles")
+}

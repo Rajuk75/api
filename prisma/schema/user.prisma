@@ -15,6 +15,7 @@ model User {
   authSessions            AuthSession[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  memberships             TenantMembership[]
 
   @@index([email])
   @@index([isActive, isDeleted])

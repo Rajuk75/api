@@ -2,10 +2,12 @@ import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/
 import * as bcrypt from 'bcryptjs';
 import { AuthRepository } from './auth.repository';
 import { UsersRepository } from '../users/users.repository';
+import { MembershipsRepository } from '../memberships/memberships.repository';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SwitchContextDto } from './dto/switch-context.dto';
 import { TokenHelper } from '../../common/utils/token.helper';
 import logger from '../../common/utils/logger';
 
@@ -14,6 +16,7 @@ export class AuthService {
   constructor(
     private readonly authRepository: AuthRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly membershipsRepository: MembershipsRepository,
   ) {}
 
   async login(payload: LoginDto, meta?: { ipAddress?: string; userAgent?: string }) {
@@ -42,9 +45,16 @@ export class AuthService {
         throw new UnauthorizedException('Invalid email or password');
       }
 
+      // Fetch user's active school/campus memberships
+      const memberships = await this.membershipsRepository.findUserActiveMemberships(user.id);
+      const defaultMembership = memberships.length > 0 ? memberships[0] : null;
+
       const { accessToken, expiresIn } = TokenHelper.generateAccessToken({
         userId: user.id,
         email: user.email,
+        tenantId: defaultMembership?.tenantId,
+        campusId: defaultMembership?.campusId,
+        roleId: defaultMembership?.roleId,
       });
 
       const refreshToken = TokenHelper.generateRandomToken(40);
@@ -71,6 +81,14 @@ export class AuthService {
           phoneNumber: user.phoneNumber,
           isActive: user.isActive,
         },
+        activeContext: defaultMembership
+          ? {
+              tenant: defaultMembership.tenant,
+              campus: defaultMembership.campus,
+              role: defaultMembership.role,
+            }
+          : null,
+        memberships,
       };
     } catch (error) {
       logger.error(`AuthService > login > Error during login [${payload.email}]: ${error}`);
@@ -202,6 +220,56 @@ export class AuthService {
       return { message: 'Password has been reset successfully' };
     } catch (error) {
       logger.error(`AuthService > resetPassword > Error resetting password: ${error}`);
+      throw error;
+    }
+  }
+
+  async switchContext(userId: string, payload: SwitchContextDto) {
+    try {
+      logger.info(
+        `AuthService > switchContext > Switching context for user ${userId} to tenant: ${payload.tenantId}`,
+      );
+
+      const user = await this.usersRepository.findById(userId);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const membership = await this.membershipsRepository.findExisting(
+        payload.tenantId,
+        userId,
+        payload.campusId,
+      );
+
+      if (!membership || membership.status !== 'ACTIVE' || !membership.isActive) {
+        logger.warn(
+          `AuthService > switchContext > User ${userId} is not an active member of tenant ${payload.tenantId}`,
+        );
+        throw new UnauthorizedException('You do not have access to this school or campus');
+      }
+
+      const { accessToken, expiresIn } = TokenHelper.generateAccessToken({
+        userId: user.id,
+        email: user.email,
+        tenantId: membership.tenantId,
+        campusId: membership.campusId,
+        roleId: membership.roleId,
+      });
+
+      logger.info(
+        `AuthService > switchContext > Successfully switched context for user ${userId} to tenant ${payload.tenantId}`,
+      );
+      return {
+        accessToken,
+        expiresIn,
+        activeContext: {
+          tenant: membership.tenant,
+          campus: membership.campus,
+          role: membership.role,
+        },
+      };
+    } catch (error) {
+      logger.error(`AuthService > switchContext > Error: ${error}`);
       throw error;
     }
   }

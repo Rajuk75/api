@@ -18,7 +18,8 @@ model Campus {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  memberships TenantMembership[]
 
   @@index([tenantId])
   @@index([tenantId, isDeleted])

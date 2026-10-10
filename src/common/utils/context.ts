@@ -7,6 +7,9 @@ export interface RequestUserContext {
   phoneNumber?: string | null;
   isActive: boolean;
   tenantId?: string | null;
+  campusId?: string | null;
+  roleId?: string | null;
+  permissions?: string[];
   [key: string]: any;
 }
 
