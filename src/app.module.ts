@@ -4,6 +4,7 @@ import { appConfig } from './config/config';
 import { HealthModule } from './health/health.module';
 import { PrismaModule } from './infrastructure/database/prisma.module';
 import { UsersModule } from './core/users/users.module';
+import { AuthModule } from './core/auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UsersModule } from './core/users/users.module';
     }),
     PrismaModule,
     UsersModule,
+    AuthModule,
     HealthModule,
   ],
   controllers: [],

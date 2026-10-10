@@ -1,9 +1,10 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
+import { TokenHelper } from '../utils/token.helper';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const authHeader = request.headers.authorization;
 
@@ -17,9 +18,12 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid authorization format. Expected Bearer <token>');
     }
 
-    // Attach user placeholder or decoded token to request
-    (request as any).user = { authenticated: true, token };
-
-    return true;
+    try {
+      const payload = TokenHelper.verifyAccessToken(token);
+      (request as any).user = payload;
+      return true;
+    } catch {
+      throw new UnauthorizedException('Invalid or expired access token');
+    }
   }
 }
