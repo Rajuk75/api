@@ -273,4 +273,46 @@ export class AuthService {
       throw error;
     }
   }
+
+  async getMe(userId: string, context?: { tenantId?: string; campusId?: string }) {
+    try {
+      const user = await this.usersRepository.findById(userId);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const memberships = await this.membershipsRepository.findUserActiveMemberships(user.id);
+      let activeMembership = null;
+
+      if (context?.tenantId) {
+        activeMembership = memberships.find(
+          (m) => m.tenantId === context.tenantId && (!context.campusId || m.campusId === context.campusId),
+        );
+      }
+      if (!activeMembership && memberships.length > 0) {
+        activeMembership = memberships[0];
+      }
+
+      return {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          isActive: user.isActive,
+        },
+        activeContext: activeMembership
+          ? {
+              tenant: activeMembership.tenant,
+              campus: activeMembership.campus,
+              role: activeMembership.role,
+            }
+          : null,
+        memberships,
+      };
+    } catch (error) {
+      logger.error(`AuthService > getMe > Error fetching session for user ${userId}: ${error}`);
+      throw error;
+    }
+  }
 }

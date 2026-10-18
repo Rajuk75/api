@@ -1,6 +1,10 @@
 export const appConfig = () => ({
   port: parseInt(process.env.PORT, 10) || 5000,
   env: process.env.NODE_ENV || 'development',
+  cookie: {
+    accessTokenMaxAge: 15 * 60 * 1000, // 15 mins
+    refreshTokenMaxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  },
   database: {
     url: process.env.DATABASE_URL || '',
   },
