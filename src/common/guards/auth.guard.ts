@@ -7,22 +7,22 @@ import logger from '../utils/logger';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(@Optional() private readonly prisma?: PrismaService) {}
+  constructor(@Optional() private readonly prisma?: PrismaService) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const authHeader = request.headers.authorization;
+    let token = request.cookies?.accessToken;
 
-    if (!authHeader) {
-      logger.warn('AuthGuard > No authorization header provided');
-      throw new UnauthorizedException('Authorization header is required');
+    if (!token && request.headers.authorization) {
+      const [scheme, authToken] = request.headers.authorization.split(' ');
+      if (scheme === 'Bearer') {
+        token = authToken;
+      }
     }
 
-    const [scheme, token] = authHeader.split(' ');
-
-    if (scheme !== 'Bearer' || !token) {
-      logger.warn('AuthGuard > Invalid authorization format');
-      throw new UnauthorizedException('Invalid authorization format. Expected Bearer <token>');
+    if (!token) {
+      logger.warn('AuthGuard > No authorization token found in cookie or header');
+      throw new UnauthorizedException('Authorization token is required');
     }
 
     let decoded: any;
