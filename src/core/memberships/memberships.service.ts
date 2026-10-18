@@ -6,7 +6,6 @@ import {
 import { MembershipsRepository } from './memberships.repository';
 import { UsersRepository } from '../users/users.repository';
 import { TenantsRepository } from '../tenants/tenants.repository';
-import { RolesRepository } from '../roles/roles.repository';
 import { CampusesRepository } from '../campuses/campuses.repository';
 import { CreateMembershipDto } from './dto/create-membership.dto';
 import { UpdateMembershipDto } from './dto/update-membership.dto';
@@ -19,7 +18,6 @@ export class MembershipsService {
     private readonly membershipsRepository: MembershipsRepository,
     private readonly usersRepository: UsersRepository,
     private readonly tenantsRepository: TenantsRepository,
-    private readonly rolesRepository: RolesRepository,
     private readonly campusesRepository: CampusesRepository,
   ) {}
 
@@ -43,14 +41,7 @@ export class MembershipsService {
         throw new NotFoundException(`Tenant with ID "${payload.tenantId}" not found`);
       }
 
-      // 3. Verify role exists
-      const role = await this.rolesRepository.findById(payload.roleId);
-      if (!role) {
-        logger.warn(`MembershipsService > create > Role not found: ${payload.roleId}`);
-        throw new NotFoundException(`Role with ID "${payload.roleId}" not found`);
-      }
-
-      // 4. Verify campus exists if provided
+      // 3. Verify campus exists if provided
       if (payload.campusId) {
         const campus = await this.campusesRepository.findById(payload.campusId);
         if (!campus || campus.tenantId !== payload.tenantId) {
@@ -59,7 +50,7 @@ export class MembershipsService {
         }
       }
 
-      // 5. Check if membership already exists
+      // 4. Check if membership already exists
       const existing = await this.membershipsRepository.findExisting(
         payload.tenantId,
         payload.userId,
@@ -127,13 +118,6 @@ export class MembershipsService {
     try {
       logger.info(`MembershipsService > update > Attempting to update membership ID: ${id}`);
       await this.findOne(id);
-
-      if (payload.roleId) {
-        const role = await this.rolesRepository.findById(payload.roleId);
-        if (!role) {
-          throw new NotFoundException(`Role with ID "${payload.roleId}" not found`);
-        }
-      }
 
       const updated = await this.membershipsRepository.update(id, payload);
       logger.info(`MembershipsService > update > Successfully updated membership ID: ${id}`);

@@ -7,8 +7,6 @@ import { UsersModule } from './core/users/users.module';
 import { AuthModule } from './core/auth/auth.module';
 import { TenantsModule } from './core/tenants/tenants.module';
 import { CampusesModule } from './core/campuses/campuses.module';
-import { RolesModule } from './core/roles/roles.module';
-import { PermissionsModule } from './core/permissions/permissions.module';
 import { MembershipsModule } from './core/memberships/memberships.module';
 
 @Module({
@@ -22,8 +20,6 @@ import { MembershipsModule } from './core/memberships/memberships.module';
     AuthModule,
     TenantsModule,
     CampusesModule,
-    RolesModule,
-    PermissionsModule,
     MembershipsModule,
     HealthModule,
   ],

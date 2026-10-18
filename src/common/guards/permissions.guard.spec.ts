@@ -1,17 +1,16 @@
-import { ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { CheckPermissionGuard } from './permissions.guard';
+import { Reflector } from '@nestjs/core';
+import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 
 describe('CheckPermissionGuard', () => {
   let guard: CheckPermissionGuard;
   let reflector: Reflector;
-  let mockPrisma: any;
 
-  const createMockContext = (user?: any) => {
-    const request = { user };
+  const createMockContext = (user: any = null): ExecutionContext => {
+    const mockRequest = { user };
     return {
       switchToHttp: () => ({
-        getRequest: () => request,
+        getRequest: () => mockRequest,
       }),
       getHandler: () => ({}),
       getClass: () => ({}),
@@ -20,12 +19,7 @@ describe('CheckPermissionGuard', () => {
 
   beforeEach(() => {
     reflector = new Reflector();
-    mockPrisma = {
-      role: {
-        findFirst: jest.fn(),
-      },
-    };
-    guard = new CheckPermissionGuard(reflector, mockPrisma);
+    guard = new CheckPermissionGuard(reflector);
   });
 
   it('should allow access if no permissions are required', async () => {
@@ -37,44 +31,28 @@ describe('CheckPermissionGuard', () => {
   });
 
   it('should throw ForbiddenException if user is missing on request', async () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['user:create']);
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['campus:create']);
     const context = createMockContext(null);
 
     await expect(guard.canActivate(context)).rejects.toThrow(ForbiddenException);
   });
 
-  it('should allow access if user has required permissions in context', async () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['user:create']);
+  it('should allow access if user role has required permission', async () => {
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['campus:create']);
     const context = createMockContext({
-      id: 'user-1',
-      permissions: ['user:create', 'user:read'],
+      id: 'admin-1',
+      role: 'ADMIN',
     });
 
     const result = await guard.canActivate(context);
     expect(result).toBe(true);
   });
 
-  it('should load permissions from DB if roleId exists and user.permissions is empty', async () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['user:create']);
-    mockPrisma.role.findFirst.mockResolvedValue({
-      rolePermissions: [{ permission: { code: 'user:create' } }],
-    });
-
+  it('should throw ForbiddenException if user role lacks required permission', async () => {
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['campus:create']);
     const context = createMockContext({
-      id: 'user-1',
-      roleId: 'role-1',
-      permissions: [],
-    });
-
-    const result = await guard.canActivate(context);
-    expect(result).toBe(true);
-  });
-
-  it('should throw ForbiddenException if user lacks required permission', async () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(['user:delete']);
-    const context = createMockContext({
-      id: 'user-1',
-      permissions: ['user:read'],
+      id: 'teacher-1',
+      role: 'TEACHER', // Teacher cannot create campus
     });
 
     await expect(guard.canActivate(context)).rejects.toThrow(ForbiddenException);

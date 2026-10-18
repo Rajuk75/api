@@ -3,19 +3,15 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  Optional,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
-import { PrismaService } from '../../infrastructure/database/prisma.service';
+import { hasPermission } from '../constants/permissions';
 import logger from '../utils/logger';
 
 @Injectable()
 export class CheckPermissionGuard implements CanActivate {
-  constructor(
-    private readonly reflector: Reflector,
-    @Optional() private readonly prisma?: PrismaService,
-  ) {}
+  constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
@@ -35,37 +31,16 @@ export class CheckPermissionGuard implements CanActivate {
       throw new ForbiddenException('Access denied: Authentication required');
     }
 
-    let userPermissions: string[] = user.permissions || [];
+    const userRole = user.role;
 
-    // If permissions not in user token/context and roleId is available, load from database
-    if (userPermissions.length === 0 && user.roleId && this.prisma) {
-      const role = await this.prisma.role.findFirst({
-        where: { id: user.roleId, isDeleted: false, isActive: true },
-        select: {
-          rolePermissions: {
-            where: { isDeleted: false, isActive: true },
-            select: {
-              permission: {
-                select: { code: true },
-              },
-            },
-          },
-        },
-      });
-
-      if (role?.rolePermissions) {
-        userPermissions = role.rolePermissions.map((rp) => rp.permission.code);
-        user.permissions = userPermissions;
-      }
-    }
-
+    // Check if user's role has all required permissions using permissions.ts
     const hasAllRequired = requiredPermissions.every((perm) =>
-      userPermissions.includes(perm),
+      hasPermission(userRole, perm),
     );
 
     if (!hasAllRequired) {
       logger.warn(
-        `CheckPermissionGuard > User ${user.id} lacks required permissions: [${requiredPermissions.join(', ')}]`,
+        `CheckPermissionGuard > User role "${userRole}" lacks required permissions: [${requiredPermissions.join(', ')}]`,
       );
       throw new ForbiddenException(
         `Access denied: Missing required permission [${requiredPermissions.join(', ')}]`,
@@ -76,6 +51,3 @@ export class CheckPermissionGuard implements CanActivate {
   }
 }
 
-// Aliases for convenience and backward compatibility
-export const CheckPermission = CheckPermissionGuard;
-export const PermissionsGuard = CheckPermissionGuard;

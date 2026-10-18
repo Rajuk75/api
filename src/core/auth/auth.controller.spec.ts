@@ -30,6 +30,8 @@ describe('AuthController', () => {
     const res: any = {};
     res.status = jest.fn().mockReturnValue(res);
     res.json = jest.fn().mockReturnValue(res);
+    res.cookie = jest.fn().mockReturnValue(res);
+    res.clearCookie = jest.fn().mockReturnValue(res);
     return res;
   };
 
@@ -74,10 +76,12 @@ describe('AuthController', () => {
       );
 
       expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.cookie).toHaveBeenCalledWith('accessToken', 'jwt-access-token-123', expect.any(Object));
+      expect(res.cookie).toHaveBeenCalledWith('refreshToken', 'raw-refresh-token-456', expect.any(Object));
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          data: mockAuthResponse,
+          data: { user: mockAuthResponse.user },
         }),
       );
     });
@@ -91,10 +95,12 @@ describe('AuthController', () => {
       await controller.refreshToken({ refreshToken: 'raw-token' }, mockRequest, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.cookie).toHaveBeenCalledWith('accessToken', 'jwt-access-token-123', expect.any(Object));
+      expect(res.cookie).toHaveBeenCalledWith('refreshToken', 'raw-refresh-token-456', expect.any(Object));
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          data: mockAuthResponse,
+          data: { user: mockAuthResponse.user },
         }),
       );
     });

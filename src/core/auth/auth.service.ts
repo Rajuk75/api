@@ -54,7 +54,7 @@ export class AuthService {
         email: user.email,
         tenantId: defaultMembership?.tenantId,
         campusId: defaultMembership?.campusId,
-        roleId: defaultMembership?.roleId,
+        role: defaultMembership?.role,
       });
 
       const refreshToken = TokenHelper.generateRandomToken(40);
@@ -253,7 +253,7 @@ export class AuthService {
         email: user.email,
         tenantId: membership.tenantId,
         campusId: membership.campusId,
-        roleId: membership.roleId,
+        role: membership.role,
       });
 
       logger.info(

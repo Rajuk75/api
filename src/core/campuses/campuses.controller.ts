@@ -8,13 +8,12 @@ import {
   Param,
   Query,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { CampusesService } from './campuses.service';
 import { CreateCampusDto } from './dto/create-campus.dto';
 import { UpdateCampusDto } from './dto/update-campus.dto';
-import { AuthGuard } from '../../common/guards/auth.guard';
+import { CheckPermission } from '../../common/decorators/permissions.decorator';
 import {
   setSuccess,
   setCreateSuccess,
@@ -24,12 +23,12 @@ import {
 import logger from '../../common/utils/logger';
 
 @Controller('campuses')
-@UseGuards(AuthGuard)
 export class CampusesController {
   constructor(private readonly campusesService: CampusesService) {}
 
   // ========================================== CREATE CAMPUS ==========================================
   @Post('create-new-campus')
+  @CheckPermission('campus:create')
   async createCampus(@Body() payload: CreateCampusDto, @Res() res: Response) {
     logger.debug(`campuses.controller.ts >>>> createCampus() >>>> Body: ${JSON.stringify(payload)}`);
     try {
@@ -49,6 +48,7 @@ export class CampusesController {
 
   // ========================================== GET ALL CAMPUSES ==========================================
   @Get('get-all-campuses')
+  @CheckPermission('campus:read')
   async getAllCampuses(
     @Query('tenantId') tenantId: string,
     @Query('page') page: string,
@@ -81,6 +81,7 @@ export class CampusesController {
 
   // ========================================== GET CAMPUS BY ID ==========================================
   @Get(':id/get-campus')
+  @CheckPermission('campus:read')
   async getCampusById(@Param('id') id: string, @Res() res: Response) {
     logger.debug(`campuses.controller.ts >>>> getCampusById() >>>> ID: ${id}`);
     try {
@@ -100,6 +101,7 @@ export class CampusesController {
 
   // ========================================== UPDATE CAMPUS ==========================================
   @Patch(':id/update-campus')
+  @CheckPermission('campus:update')
   async updateCampus(
     @Param('id') id: string,
     @Body() payload: UpdateCampusDto,
@@ -125,6 +127,7 @@ export class CampusesController {
 
   // ========================================== DELETE CAMPUS ==========================================
   @Delete(':id/delete-campus')
+  @CheckPermission('campus:delete')
   async deleteCampus(@Param('id') id: string, @Res() res: Response) {
     logger.debug(`campuses.controller.ts >>>> deleteCampus() >>>> ID: ${id}`);
     try {

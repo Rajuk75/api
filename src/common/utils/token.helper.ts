@@ -11,7 +11,7 @@ export interface TokenUserPayload {
   email: string;
   tenantId?: string | null;
   campusId?: string | null;
-  roleId?: string | null;
+  role?: string | null;
   [key: string]: any;
 }
 
@@ -29,7 +29,7 @@ export class TokenHelper {
       sub: payload.userId,
       ...(payload.tenantId ? { tenantId: payload.tenantId } : {}),
       ...(payload.campusId ? { campusId: payload.campusId } : {}),
-      ...(payload.roleId ? { roleId: payload.roleId } : {}),
+      ...(payload.role ? { role: payload.role } : {}),
     };
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, {

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { MembershipStatus } from '@prisma/client';
 
 export class CreateMembershipDto {
@@ -10,9 +10,9 @@ export class CreateMembershipDto {
   @IsNotEmpty({ message: 'tenantId is required' })
   tenantId: string;
 
-  @IsUUID('4', { message: 'roleId must be a valid UUID' })
-  @IsNotEmpty({ message: 'roleId is required' })
-  roleId: string;
+  @IsString({ message: 'role must be a string' })
+  @IsOptional()
+  role?: string;
 
   @IsUUID('4', { message: 'campusId must be a valid UUID' })
   @IsOptional()

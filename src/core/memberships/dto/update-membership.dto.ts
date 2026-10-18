@@ -1,10 +1,10 @@
-import { IsBoolean, IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { MembershipStatus } from '@prisma/client';
 
 export class UpdateMembershipDto {
-  @IsUUID('4', { message: 'roleId must be a valid UUID' })
+  @IsString({ message: 'role must be a string' })
   @IsOptional()
-  roleId?: string;
+  role?: string;
 
   @IsUUID('4', { message: 'campusId must be a valid UUID' })
   @IsOptional()

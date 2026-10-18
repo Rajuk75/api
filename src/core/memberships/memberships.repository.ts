@@ -5,14 +5,14 @@ import { MembershipStatus, Prisma } from '@prisma/client';
 export interface CreateMembershipData {
   userId: string;
   tenantId: string;
-  roleId: string;
   campusId?: string;
+  role?: string;
   status?: MembershipStatus;
 }
 
 export interface UpdateMembershipData {
-  roleId?: string;
   campusId?: string;
+  role?: string;
   status?: MembershipStatus;
   isActive?: boolean;
 }
@@ -21,8 +21,8 @@ export const MEMBERSHIP_SELECT_FIELDS = {
   id: true,
   userId: true,
   tenantId: true,
-  roleId: true,
   campusId: true,
+  role: true,
   status: true,
   joinedAt: true,
   isActive: true,
@@ -37,12 +37,6 @@ export const MEMBERSHIP_SELECT_FIELDS = {
     },
   },
   tenant: {
-    select: {
-      id: true,
-      name: true,
-    },
-  },
-  role: {
     select: {
       id: true,
       name: true,

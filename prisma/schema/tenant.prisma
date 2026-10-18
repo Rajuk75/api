@@ -27,7 +27,6 @@ model Tenant {
   updatedAt     DateTime     @updatedAt
 
   campuses    Campus[]
-  roles       Role[]
   memberships TenantMembership[]
 
   @@index([status, isDeleted])

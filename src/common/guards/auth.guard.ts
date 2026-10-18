@@ -61,7 +61,7 @@ export class AuthGuard implements CanActivate {
     const authUser: any = user ? { ...user } : { ...decoded };
     if (decoded.tenantId) authUser.tenantId = decoded.tenantId;
     if (decoded.campusId) authUser.campusId = decoded.campusId;
-    if (decoded.roleId) authUser.roleId = decoded.roleId;
+    if (decoded.role) authUser.role = decoded.role;
 
     request.user = authUser;
     setUserContext(authUser);
